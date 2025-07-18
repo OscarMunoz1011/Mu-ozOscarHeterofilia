@@ -1,29 +1,61 @@
+using Aplicacion;
+using Persistencia;
+using Presentacion;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+
+builder.Services.AddControllers();
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+#region Configuración de Inyección de dependiancia
+builder.Services.AddApplicationLayer();
+builder.Services.AddPersistenceInfraestructure(builder.Configuration);
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme."
+    });
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                    }
+                },
+                new string[] {}
+        }
+    });
+});
+#endregion
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-app.UseRouting();
+
+app.UseErrorHandlingMiddleware();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
+app.MapControllers();
 
 app.Run();
+

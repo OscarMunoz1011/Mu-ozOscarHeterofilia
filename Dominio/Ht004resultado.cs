@@ -6,7 +6,7 @@ public partial class Ht004resultado
 
     public int Ht001id { get; set; }
 
-    public string? Ht003codigo { get; set; }
+    public string Ht003codigo { get; set; } = null!;
 
     public int Ht004intento { get; set; }
 

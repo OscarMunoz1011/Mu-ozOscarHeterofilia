@@ -4,6 +4,7 @@ using Aplicacion.Dto.Response;
 using Aplicacion.Exceptions;
 using Aplicacion.Interfaces;
 using Aplicacion.Wrappers;
+using Dominio;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Persistencia.Contexto;
@@ -24,7 +25,14 @@ namespace Persistencia.Repositorio
             _dbContextSql = dbContextSql;
             _jwtSetting = jwtSetting;
         }
-        public async Task<Response<AutenticacionResponse>> AuthenticateAsync(AutenticacionRequest request)
+
+        /// <summary>
+        /// Devuelve el token, enviando un usuario y contraseña
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="ApiException"></exception>
+        public async Task<AutenticacionResponse> AutenticarUsuario(AutenticacionRequest request)
         {
             try
             {
@@ -44,13 +52,38 @@ namespace Persistencia.Repositorio
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
                 };
 
-                return new Response<AutenticacionResponse>(response, "Usuario autenticado correctamente");
+                return response;
             }
             catch (Exception ex)
             {
                 throw new ApiException($"Error al autenticarse {ex.Message} {ex.InnerException?.Message}");
             }
         }
+
+        /// <summary>
+        /// Permite registrar un nuevo usuario, para poder autenticarse
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="ApiException"></exception>
+        public async Task<string> RegistrarUsuario(RegistrarUsuarioRequest request)
+        {
+            //Verifico que el usuario no exista
+            if (_dbContextSql.Sg001usuario.Any(x => x.Sg001usuario1.Equals(request.Usuario)))
+                throw new ApiException($"El usuario {request.Usuario} ya existe");
+            _dbContextSql.Add(new Sg001usuario
+            {
+                Sg001nombre = request.Nombre,
+                Sg001apellido = request.Apellido,
+                Sg001usuario1 = request.Usuario,
+                Sg001password = request.Password,
+                Sg001estado = true,
+            });
+            await _dbContextSql.SaveChangesAsync();
+            return "Cambios guardados exitosamente";
+        }
+
+        #region metodos privados
 
         private async Task<JwtSecurityToken> GenerateJWTToken(string usuario)
         {
@@ -81,7 +114,7 @@ namespace Persistencia.Repositorio
         }
 
 
-        public string EncriptarPassword(string password)
+        private string EncriptarPassword(string password)
         {
             string resultado = string.Empty;
             try
@@ -103,12 +136,12 @@ namespace Persistencia.Repositorio
             return resultado;
         }
 
-        public string DesencriptarPassword(string password)
+        private string DesencriptarPassword(string password)
         {
             string resultado = string.Empty;
             try
             {
-                
+
                 Stream privateKeyStream = new MemoryStream(Convert.FromBase64String(ConstantDefaults.LlavePublica));
                 EncryptionKeys encryptionKeys = new EncryptionKeys(privateKeyStream, password);
                 PGP pgp = new PGP(encryptionKeys);
@@ -121,5 +154,6 @@ namespace Persistencia.Repositorio
             }
             return resultado;
         }
+        #endregion
     }
 }
