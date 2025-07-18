@@ -1,5 +1,8 @@
 ﻿using Aplicacion.Interfaces;
+using Aplicacion.Wrappers;
 using Dominio;
+using Newtonsoft.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Presentacion.Middleaweavers
 {
@@ -33,6 +36,7 @@ namespace Presentacion.Middleaweavers
             catch (Exception ex)
             {
                 var response = context.Response;
+                var responseModel = new Response<string>() { Succeeded = false, Message = ex.Message };
                 response.ContentType = "application/json";
                 await _logger.GuardarLog(new Sg002log
                 {
@@ -41,6 +45,7 @@ namespace Presentacion.Middleaweavers
                     Sg002datos = body,
                     Sg002fecha = DateTime.Now
                 });
+                await response.WriteAsync(JsonConvert.SerializeObject(responseModel));
             }
         }
     }

@@ -3,16 +3,13 @@ using Aplicacion.Dto.Request;
 using Aplicacion.Dto.Response;
 using Aplicacion.Exceptions;
 using Aplicacion.Interfaces;
-using Aplicacion.Wrappers;
 using Dominio;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Persistencia.Contexto;
-using PgpCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Persistencia.Repositorio
 {
@@ -36,8 +33,14 @@ namespace Persistencia.Repositorio
         {
             try
             {
+                #region Validaciones
                 //Verifico que el cliente exista
                 var usuario = _dbContextSql.Sg001usuario.FirstOrDefault(x => x.Sg001usuario1.Equals(request.Usuario)) ?? throw new ApiException("El usuario no existe");
+
+                //Verifico que el cliente este activo
+                if (!usuario.Sg001estado)
+                    throw new ApiException("El usuario esta inactivo");
+                #endregion
 
                 //Desencriptar contraseña
                 string claveDesencriptada = DesencriptarPassword(usuario.Sg001password);
@@ -76,7 +79,7 @@ namespace Persistencia.Repositorio
                 Sg001nombre = request.Nombre,
                 Sg001apellido = request.Apellido,
                 Sg001usuario1 = request.Usuario,
-                Sg001password = request.Password,
+                Sg001password = EncriptarPassword(request.Password),
                 Sg001estado = true,
             });
             await _dbContextSql.SaveChangesAsync();
@@ -101,7 +104,7 @@ namespace Persistencia.Repositorio
                     issuer: _jwtSetting.Value.Issuer,
                     audience: _jwtSetting.Value.Audience,
                     claims: claims,
-                    expires: DateTime.Now.AddHours(24),
+                    expires: DateTime.Now.AddHours(ConstantDefaults.HorasToken),
                     signingCredentials: signingCredentials
                     );
 
@@ -116,43 +119,32 @@ namespace Persistencia.Repositorio
 
         private string EncriptarPassword(string password)
         {
-            string resultado = string.Empty;
             try
             {
-                var llave = ConstantDefaults.LlavePublica;
-
-                Stream publicKeyStream = new MemoryStream(Convert.FromBase64String(llave));
-                EncryptionKeys encryptionKeys = new EncryptionKeys(publicKeyStream);
-                PGP pgp = new PGP(encryptionKeys);
-                string encryptedContent = pgp.EncryptArmoredString(password);
-                encryptedContent = Regex.Replace(encryptedContent, @"\n", "");
-                encryptedContent = Regex.Replace(encryptedContent, @"\r", "");
-                resultado = encryptedContent.Replace("-----BEGIN PGP MESSAGE-----Version: BCPG C# v1.9.0.0", "").Replace("-----END PGP MESSAGE-----", "");
+                string result = string.Empty;
+                byte[] encryted = Encoding.Unicode.GetBytes(password);
+                result = Convert.ToBase64String(encryted);
+                return result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new ApiException($"Error al encriptar la clave {ex.Message} {ex.InnerException?.Message}");
+                return string.Empty;
             }
-            return resultado;
         }
 
         private string DesencriptarPassword(string password)
         {
-            string resultado = string.Empty;
             try
             {
-
-                Stream privateKeyStream = new MemoryStream(Convert.FromBase64String(ConstantDefaults.LlavePublica));
-                EncryptionKeys encryptionKeys = new EncryptionKeys(privateKeyStream, password);
-                PGP pgp = new PGP(encryptionKeys);
-                // Decrypt
-                resultado = pgp.DecryptArmoredString(password);
+                string result = string.Empty;
+                byte[] decryted = Convert.FromBase64String(password);
+                result = Encoding.Unicode.GetString(decryted);
+                return result;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new ApiException($"Error al encriptar la clave {ex.Message} {ex.InnerException?.Message}");
+                return string.Empty;
             }
-            return resultado;
         }
         #endregion
     }

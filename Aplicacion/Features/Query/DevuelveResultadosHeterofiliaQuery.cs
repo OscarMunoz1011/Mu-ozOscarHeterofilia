@@ -9,8 +9,8 @@ namespace Aplicacion.Features.Query
 {
     public class DevuelveResultadosHeterofiliaQuery : IRequest<Response<List<ResultadosHeterofiliaResponse>>>
     {
-        [Range(1, int.MaxValue, ErrorMessage = "El número de paginado debe ser mayor a cero")]
-        public int? CantidadPaginas { get; set; }
+        [Range(1, int.MaxValue, ErrorMessage = "El número de página debe ser mayor a cero")]
+        public int? IndexPagina { get; set; }
         [Range(1, int.MaxValue, ErrorMessage = "El número de datos por pagina debe ser mayor a cero")]
         public int? CantidadResultados { get; set; }
 
@@ -27,7 +27,7 @@ namespace Aplicacion.Features.Query
 
             public async Task<Response<List<ResultadosHeterofiliaResponse>>> Handle(DevuelveResultadosHeterofiliaQuery request, CancellationToken cancellationToken)
             {
-                List<ResultadosHeterofiliaResponse> result = await _iResultadoRepository.DevuelveResultadosHeterofilia(request.CantidadPaginas, request.CantidadResultados);
+                List<ResultadosHeterofiliaResponse> result = await _iResultadoRepository.DevuelveResultadosHeterofilia(request.IndexPagina, request.CantidadResultados);
                 return new Response<List<ResultadosHeterofiliaResponse>>(result);
             }
         }

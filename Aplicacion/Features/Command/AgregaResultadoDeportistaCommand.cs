@@ -14,9 +14,9 @@ namespace Aplicacion.Features.Command
         [Required(ErrorMessage = "El codigo de modalidad es obligatorio")]
         public string CodigoModalidad { get; set; } = null!;
         [Required(ErrorMessage = "El puntaje es obligatorio")]
-        [Range(1,10,ErrorMessage = "El puntaje debe estar entre 1 y 10")]
+        [Range(0,500,ErrorMessage = "El puntaje debe estar entre 0 y 500")]
         public int Puntaje { get; set; }
-        public class RegistrarUsuarioCommandHandler : IRequestHandler<RegistrarUsuarioCommand, Response<string>>
+        public class RegistrarUsuarioCommandHandler : IRequestHandler<AgregaResultadoDeportistaCommand, Response<string>>
         {
             IResultadoRepository _iResultadoRepository;
             private readonly IMapper _mapper;
@@ -27,7 +27,7 @@ namespace Aplicacion.Features.Command
                 _mapper = mapper;
             }
 
-            public async Task<Response<string>> Handle(RegistrarUsuarioCommand request, CancellationToken cancellationToken)
+            public async Task<Response<string>> Handle(AgregaResultadoDeportistaCommand request, CancellationToken cancellationToken)
             {
                 AgregaResultadoDeportistaRequest _request = _mapper.Map<AgregaResultadoDeportistaRequest>(request);
                 string resultado = await _iResultadoRepository.AgregaResultadoDeportista(_request);

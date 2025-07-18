@@ -8,9 +8,9 @@ namespace Persistencia.Configuracion
     {
         public void Configure(EntityTypeBuilder<Sg002log> entity)
         {
-            entity
-               .HasNoKey()
-               .ToTable("sg002logs");
+            entity.HasKey(e => e.Sg002id).HasName("sg002logs_pk");
+
+            entity.ToTable("sg002logs");
 
             entity.Property(e => e.Sg002codigo)
                 .HasMaxLength(1000)

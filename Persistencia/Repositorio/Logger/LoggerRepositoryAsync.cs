@@ -54,7 +54,7 @@ namespace Persistencia.Repositorio.Logger
                 if (!Directory.Exists(logDirectory))
                     Directory.CreateDirectory(logDirectory);
 
-                var _logFilePath = Path.Combine(logDirectory, $"Log{DateTime.Now}");
+                var _logFilePath = Path.Combine(logDirectory, $"Log{DateTime.Now.ToString("HHHHmmss_ddMMyyyy")}");
 
                 using (StreamWriter writer = new StreamWriter(_logFilePath, true))
                 {

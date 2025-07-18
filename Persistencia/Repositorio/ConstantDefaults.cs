@@ -2,6 +2,9 @@
 {
     internal class ConstantDefaults
     {
-        public static string LlavePublica = "gt7fZ0JardrDsYK6M4fP9SMXjxSlsUlT";
+        public static readonly int NumeroIntentos = 3;
+        public static readonly int HorasToken = 24;
+        public static readonly int IndexPagina = 1;
+        public static readonly int CantidadResultados = 10;
     }
 }
