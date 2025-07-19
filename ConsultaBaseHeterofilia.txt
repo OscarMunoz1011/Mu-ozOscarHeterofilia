@@ -1,0 +1,6 @@
+SELECT [h2].[ht001id], [h2].[cf001codigo], [h2].[ht001apellido], [h2].[ht001estado], [h2].[ht001nombre], [h1].[ht002id], [h1].[ht002es_arranque], [h1].[ht002es_envion], [h].[ht004id], [h].[ht001id], [h].[ht003codigo], [h].[ht004intento], [h].[ht004puntaje]
+FROM [ht004resultado] AS [h]
+INNER JOIN [ht003modalidad] AS [h0] ON [h].[ht003codigo] = [h0].[ht003codigo]
+INNER JOIN [ht002tipo_modalidad] AS [h1] ON [h0].[ht002id] = [h1].[ht002id]
+INNER JOIN [ht001deportista] AS [h2] ON [h].[ht001id] = [h2].[ht001id]
+WHERE [h2].[ht001estado] = CAST(1 AS bit) AND [h0].[ht003estado] = CAST(1 AS bit)
