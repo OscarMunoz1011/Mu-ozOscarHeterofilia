@@ -111,5 +111,23 @@ namespace Persistencia.Repositorio
             }
             return "Cambios guardados exitosamente";
         }
+
+        /// <summary>
+        /// Devuelve cantidad de intentos de cada deportista
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<IntentoDeportistaResponse>> DevuelveIntentosDeportista()
+        {
+            var response = (from ht4 in _dbcontextSql.Ht004resultado
+                            join ht1 in _dbcontextSql.Ht001deportista on ht4.Ht001id equals ht1.Ht001id
+                            group new {ht1,ht4} by new {ht1.Ht001nombre,ht1.Ht001apellido} into gp
+                            select new IntentoDeportistaResponse
+                            {
+                                NombreDeportista = $"{gp.Key.Ht001nombre} {gp.Key.Ht001apellido}",
+                                CantidadIntentos = gp.Max(x => x.ht4.Ht004intento)
+                            }).ToList();
+
+            return response;
+        }
     }
 }

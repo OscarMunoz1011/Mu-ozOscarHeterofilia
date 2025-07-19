@@ -21,5 +21,11 @@ namespace Aplicacion.Interfaces
         /// <returns></returns>
         /// <exception cref="ApiException"></exception>
         Task<string> AgregaResultadoDeportista(AgregaResultadoDeportistaRequest request);
+
+        /// <summary>
+        /// Devuelve cantidad de intentos de cada deportista
+        /// </summary>
+        /// <returns></returns>
+        Task<List<IntentoDeportistaResponse>> DevuelveIntentosDeportista();
     }
 }
